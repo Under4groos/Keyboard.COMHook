@@ -10,16 +10,32 @@ serialib serial;
 
  
 
-
+char buffer[3]{};
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 	if (wParam == WM_KEYDOWN) {
 		KBDLLHOOKSTRUCT* strParam = (KBDLLHOOKSTRUCT*)lParam;
 		
-		cout << (char)strParam->vkCode << endl;
+		cout << (char)strParam->vkCode << " [" << strParam->vkCode << "] " << endl;
 		if (serial.isDeviceOpen()) {
 
-			const char* codes = {};
+			//unsigned char codes[3]  = {
+			//	1, // 1-4 | 1-key down, 2-key up , 3-keypress 
+			//	2, // key code 
+			//	4, // sleep 
+			//};
+
+			unsigned char codes[3] = {
+				3, // 1-4 | 1-key down, 2-key up , 3-keypress 
+				strParam->vkCode, // key code 
+				0, // sleep 
+			};
 			serial.writeBytes(codes, sizeof(codes));
+
+
+			
+			serial.readString(buffer, '\n', 256, 2000);
+
+			cout << buffer << endl;
 		}
 
 		
@@ -38,8 +54,10 @@ int main()
 		return 1;
 	
 	hookKeyboard = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, 0, 0);
-
-
+	
+	
+	
+ 
 
 
 
